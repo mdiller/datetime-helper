@@ -127,7 +127,9 @@ export default {
 		},
 		parseDate(text) {
 			text = text.trim();
-			text = text.replace(/(?<=[^\s])-(?=[^\s])/g, " "); // replace - inbetween 2 non-spaces with " ".
+			if (text.includes(" ")) {
+				text = text.replace(/(?<=[^\s])-(?=[^\s])/g, " "); // replace - inbetween 2 non-spaces with " ".
+			}
 			if (/^[0-9\.]+$/.test(text)) {
 				var value = parseFloat(text);
 				if (value < 100000000000) {
