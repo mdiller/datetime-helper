@@ -2,6 +2,7 @@
 	<DillermNavBar :config="config" />
 	<div id="container" class="dillerm">
 		<div>
+			<!-- Gonna put fancy stuff here like a clock -->
 		</div>
 		<div>
 			<dillerm-text
@@ -27,14 +28,51 @@
 			</div>
 		</div>
 		<div>
+			<dillerm-select
+				v-model:value="selected_code"
+				:options="code_options"
+				:searchable="false" />
+			<br />
+			<div class="code" v-html="highlighted_code"></div>
+			<br />
+			The idea is the above code block above will have some code snippets/examples of some commmon datetime conversions for each language
 		</div>
 	</div>
 </template>
 
 <script>
+import { highlight, languages } from "prismjs/components/prism-core";
+import 'prismjs/components/prism-clike';
+import "prismjs/components/prism-javascript";
+import "prismjs/components/prism-python";
+import "prismjs/components/prism-csharp";
+import "./assets/prismjs-theme.css";
+
+import CODE_CS from "./assets/code.cs?raw";
+import CODE_JS from "./assets/code.js?raw";
+import CODE_PY from "./assets/code.py?raw";
+
 import DillermSelect from "@dillerm/webutils/src/components/controls/DillermSelect.vue";
 import DillermText from "@dillerm/webutils/src/components/controls/DillermText.vue";
 import DillermNavBar from "@dillerm/webutils/src/components/DillermNavBar.vue";
+
+const CODE_OPTIONS = [
+	{
+		value: "cs",
+		label: "C#",
+		code: CODE_CS
+	},
+	{
+		value: "js",
+		label: "JavaScript",
+		code: CODE_JS
+	},
+	{
+		value: "py",
+		label: "Python",
+		code: CODE_PY
+	}
+];
 
 // http://www.java2s.com/ref/javascript/javascript-string-format-dict.html
 String.prototype.format = function(dict) {
@@ -43,7 +81,7 @@ String.prototype.format = function(dict) {
   if(typeof(dict) === "object") {
 	Object.keys(dict).forEach(function(key) {
 		result = result.replace("{" + key + "}", dict[key]);
-	});//from w ww . j a  va 2 s.  c o  m
+	});
 	return result;
 	}
 
@@ -82,7 +120,9 @@ export default {
 				github_url: "https://github.com/mdiller/datetime-helper"
 			},
 			datetime: null,
-			input: ""
+			input: "",
+			code_options: [],
+			selected_code: null
 		}
 	},
 	computed: {
@@ -109,6 +149,11 @@ export default {
 		},
 		input_used() {
 			return this.input_valid && this.input != "" && (this.timestamp == this.input_parsed.getTimestamp())
+		},
+		highlighted_code() {
+			var code = highlight(this.selected_code.code, languages[this.selected_code.value]); // languages.<insert language> to return html with markup
+			code = code.replace("\n", "<br />");
+			return code;
 		}
 	},
 	watch: {
@@ -176,6 +221,8 @@ export default {
 	},
 	created() {
 		this.datetime = new Date();
+		this.code_options = CODE_OPTIONS;
+		this.selected_code = this.code_options[0];
 
 		document.removeEventListener('paste', this.pasteHandler);
 		document.addEventListener('paste', this.pasteHandler);
@@ -260,6 +307,13 @@ input[type="datetime-local"] {
 
 .input-unused > input{
 	color: grey;
+}
+
+.code {
+	background: var(--background-color2);
+	padding: 16px;
+	border-radius: 8px;
+	font-family: var(--input-numerical-font-family);
 }
 
 </style>

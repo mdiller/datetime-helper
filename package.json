@@ -8,6 +8,7 @@
 	},
 	"dependencies": {
 		"@dillerm/webutils": "^0.0.13",
+		"prismjs": "^1.29.0",
 		"vue": "^3.2.37"
 	},
 	"devDependencies": {
