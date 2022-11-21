@@ -12,13 +12,16 @@
 				placeholder="Enter a date here in any format"
 				v-model:value="input"
 				:debounce-delay="200" />
+			<br />
 			<div class="combo-table">
 				<span>DateTime (Local)</span>
 				<div>{{ formatted_date }}</div>
 				<span>DateTime (UTC)</span>
-				<div>{{ formatted_date }}</div>
+				<div>{{ formatted_date_utc }}</div>
 				<span>Timestamp</span>
 				<div>{{ timestamp }}</div>
+				<span>Timestamp (ms)</span>
+				<div>{{ timestamp_ms }}</div>
 				<span>ISO 8601</span>
 				<div>{{ iso_format }}</div>
 			</div>
@@ -32,6 +35,39 @@
 import DillermSelect from "@dillerm/webutils/src/components/controls/DillermSelect.vue";
 import DillermText from "@dillerm/webutils/src/components/controls/DillermText.vue";
 import DillermNavBar from "@dillerm/webutils/src/components/DillermNavBar.vue";
+
+// http://www.java2s.com/ref/javascript/javascript-string-format-dict.html
+String.prototype.format = function(dict) {
+  var result = this;
+
+  if(typeof(dict) === "object") {
+	Object.keys(dict).forEach(function(key) {
+		result = result.replace("{" + key + "}", dict[key]);
+	});//from w ww . j a  va 2 s.  c o  m
+	return result;
+	}
+
+	var args = [];
+	var n = arguments.length;
+	var i = 0;
+
+	for(i; i < n; i+=1) {
+		args.push(arguments[i]);
+	}
+
+	var result = this;
+
+	args.forEach(function(arg) {
+		result = result.replace("{}", arg);
+	});
+
+	return result;
+}
+
+
+Date.prototype.getTimestamp = function() {
+	return parseInt(this.getTime() / 1000);
+}
 
 export default {
 	components: {
@@ -51,27 +87,28 @@ export default {
 	},
 	computed: {
 		formatted_date() {
-			return this.datetime.toLocaleDateString('en-us', { weekday:"long", year:"numeric", month:"short", day:"numeric"});
+			return this.formatDate(this.datetime, new Date().getTimezoneOffset());
 		},
 		formatted_date_utc() {
-			return this.datetime.toLocaleDateString('en-us', { weekday:"long", year:"numeric", month:"short", day:"numeric"});
+			return this.formatDate(this.datetime, 0);
 		},
 		iso_format() {
 			return this.datetime.toISOString();
 		},
 		timestamp() {
+			return this.datetime.getTimestamp();
+		},
+		timestamp_ms() {
 			return this.datetime.getTime();
 		},
 		input_parsed() {
-			var text = this.input.trim();
-			var date = new Date(text);
-			return (Object.prototype.toString.call(date) === "[object Date]" && !isNaN(date)) ? date : null;
+			return this.parseDate(this.input);
 		},
 		input_valid() {
 			return this.input == "" || (this.input_parsed != null);
 		},
 		input_used() {
-			return this.input_valid && this.input != "" && (this.timestamp == this.input_parsed.getTime())
+			return this.input_valid && this.input != "" && (this.timestamp == this.input_parsed.getTimestamp())
 		}
 	},
 	watch: {
@@ -85,9 +122,54 @@ export default {
 		pasteHandler(event) {
 			var text = (event.clipboardData || window.clipboardData).getData('text');
 			if (text && event.target.tagName != "INPUT") {
-				console.log("pasted");
 				this.input = text;
 			}
+		},
+		parseDate(text) {
+			text = text.trim();
+			text = text.replace(/(?<=[^\s])-(?=[^\s])/g, " "); // replace - inbetween 2 non-spaces with " ".
+			if (/^[0-9\.]+$/.test(text)) {
+				var value = parseFloat(text);
+				if (value < 100000000000) {
+					// this is probably in seconds, not ms.
+					value *= 1000;
+				}
+				text = parseInt(value);
+			}
+			var date = new Date(text);
+			return (Object.prototype.toString.call(date) === "[object Date]" && !isNaN(date)) ? date : null;
+		},
+		formatDate(date, tz_offset = 0) {
+			// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date
+			var current_tz_offset = date.getTimezoneOffset();
+			if (tz_offset != current_tz_offset) {
+				var offset_diff = current_tz_offset - tz_offset;
+				date = new Date(date.getTime() + (offset_diff * 60000));
+			}
+			var date_parts = {
+				day: date.getDate(),
+				month: date.getMonth(),
+				year: date.getFullYear(),
+				hour: date.getHours(),
+				minute: date.getMinutes().toString().padStart(2, "0"),
+				second: date.getSeconds(),
+			}
+			if (date_parts.hour < 12) {
+				date_parts.am_pm = "AM";
+				if (date_parts.hour == 0) {
+					date_parts.hour = 12;
+				}
+			}
+			else {
+				date_parts.am_pm = "PM";
+				if (date_parts.hour != 12) {
+					date_parts.hour -= 12;
+				}
+			}
+			var shortMonth = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul","Aug", "Sep", "Oct", "Nov", "Dec"];
+			date_parts.month_short = shortMonth[date_parts.month];
+			var format_string = `{day}-{month_short}-{year} {hour}:{minute} {am_pm}`;
+			return format_string.format(date_parts);
 		}
 	},
 	created() {
