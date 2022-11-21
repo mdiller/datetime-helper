@@ -1,0 +1,18 @@
+{
+	"name": "datetime-helper",
+	"version": "0.0.1",
+	"scripts": {
+		"dev": "vite --host",
+		"build": "vite build",
+		"devbuild": "set DEBUG_MODE=true && vite build && sh _scripts/sync_libdev.sh"
+	},
+	"dependencies": {
+		"@dillerm/webutils": "^0.0.13",
+		"vue": "^3.2.37"
+	},
+	"devDependencies": {
+		"@vitejs/plugin-vue": "^3.0.3",
+		"sass": "^1.54.9",
+		"vite": "^3.0.7"
+	}
+}
