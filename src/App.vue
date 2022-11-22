@@ -62,16 +62,19 @@ const CODE_OPTIONS = [
 	{
 		value: "cs",
 		label: "C#",
+		icon: "fa-lang-csharp",
 		code: CODE_CS
 	},
 	{
 		value: "js",
 		label: "JavaScript",
+		icon: "fa-lang-javascript",
 		code: CODE_JS
 	},
 	{
 		value: "py",
 		label: "Python",
+		icon: "fa-lang-python",
 		code: CODE_PY
 	}
 ];

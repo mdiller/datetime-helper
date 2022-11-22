@@ -7,7 +7,7 @@
 		"devbuild": "set DEBUG_MODE=true && vite build && sh _scripts/sync_libdev.sh"
 	},
 	"dependencies": {
-		"@dillerm/webutils": "^0.0.13",
+		"@dillerm/webutils": "^0.0.16",
 		"prismjs": "^1.29.0",
 		"vue": "^3.2.37"
 	},
