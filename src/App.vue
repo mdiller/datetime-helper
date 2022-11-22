@@ -1,8 +1,8 @@
 <template>
 	<DillermNavBar :config="config" />
-	<div id="container" class="dillerm">
+	<div id="container" class="dillerm" :class="{ 'code-expanded': code_expanded }">
 		<div>
-			<!-- Gonna put fancy stuff here like a clock -->
+			There will be a clock here
 		</div>
 		<div>
 			<dillerm-text
@@ -28,14 +28,16 @@
 			</div>
 		</div>
 		<div>
-			<dillerm-select
-				v-model:value="selected_code"
-				:options="code_options"
-				:searchable="false" />
-			<br />
+			<div class="code-header">
+				<div @click="code_expanded = !code_expanded">
+					<i class="fa-solid fa-angles-left"></i>
+				</div>
+				<dillerm-select
+					v-model:value="selected_code"
+					:options="code_options"
+					:searchable="false" />
+			</div>
 			<div class="code" v-html="highlighted_code"></div>
-			<br />
-			The idea is the above code block above will have some code snippets/examples of some commmon datetime conversions for each language
 		</div>
 	</div>
 </template>
@@ -122,7 +124,8 @@ export default {
 			datetime: null,
 			input: "",
 			code_options: [],
-			selected_code: null
+			selected_code: null,
+			code_expanded: false
 		}
 	},
 	computed: {
@@ -152,7 +155,7 @@ export default {
 		},
 		highlighted_code() {
 			var code = highlight(this.selected_code.code, languages[this.selected_code.value]); // languages.<insert language> to return html with markup
-			code = code.replace("\n", "<br />");
+			code = code.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1">$1</a>');
 			return code;
 		}
 	},
@@ -241,19 +244,22 @@ export default {
 
 #container {
 	width: 100%;
-	display: flex;
+	display: grid;
+	grid-template-columns: 33% 33% 33%;
+	transition: grid-template-columns 1s;
 }
 
 #container > div {
 	flex: 1;
-	padding: 10px 50px;
+	padding: 10px 20px;
+	transition: padding 1s;
 }
 
 .combo-table { 
 	display: grid;
     grid-template-columns: min-content auto; 
-	background: var(--background-color3);
-	border: 2px solid var(--background-color3);
+	background: var(--background-color4);
+	border: 2px solid var(--background-color4);
 	border-radius: 8px;
 	gap: 1px
 }
@@ -263,13 +269,13 @@ export default {
 }
 
 .combo-table > span {
-	background: var(--background-color1);
+	background: var(--background-color2);
 	text-align: left;
 	white-space: nowrap;
 }
 
 .combo-table > div {
-	background: var(--background-color2);
+	background: var(--background-color3);
 	text-align: right;
 }
 
@@ -280,7 +286,7 @@ export default {
 
 @media screen and (max-width: 700px) {
 	#container {
-		flex-direction: column;
+		grid-template-columns: 100% !important;
 	}
 	#container > div {
 		padding: 10px;
@@ -288,6 +294,7 @@ export default {
 	#container > div:nth-child(2) {
 		order: -1;
 	}
+
 }
 
 input[type="datetime-local"] {
@@ -309,11 +316,72 @@ input[type="datetime-local"] {
 	color: grey;
 }
 
+#container.code-expanded {
+	grid-template-columns: 25% 25% 50%;
+}
+
+#container:not(.code-expanded) > div:nth-child(2) {
+	padding: 10px 80px;
+}
+
+/* #container > div:nth-child(3) {
+	padding: 10px 25px;
+} */
+
+.code-header {
+	display: flex;
+}
+
+.code-header > * {
+	flex: auto;
+}
+
+.code-header > div:first-child {
+	display: flex;
+	max-width: var(--input-height);
+	align-items: center;
+	justify-content: center;
+	background-color: var(--input-background);
+	border-radius: var(--input-border-radius) 0 0 0;
+	border: var(--input-border);
+	border-right: none;
+	font-size: 20px;
+	cursor: pointer;
+	transition: background var(--input-transition-time);
+}
+
+.code-header > div:first-child:hover {
+	background: var(--background-color4);
+}
+
+.code-header > div:first-child i {
+	transition: transform var(--input-transition-time);
+}
+
+.code-expanded .code-header > div:first-child i {
+	transform: rotate(180deg);
+}
+
+.code-header .dillerm-select input {
+	border-radius: 0px var(--input-border-radius) 0px 0px;
+	/* border-bottom: none; */
+}
+
 .code {
 	background: var(--background-color2);
+	border: 1px solid var(--background-color4);
+	border-top: none;
 	padding: 16px;
-	border-radius: 8px;
+	border-radius: 0px 0px 8px 8px;
 	font-family: var(--input-numerical-font-family);
+	font-size: 14px;
+	white-space: pre;
+	overflow-x: auto;
+}
+
+.code a {
+	color: inherit;
+	text-decoration: underline;
 }
 
 </style>
