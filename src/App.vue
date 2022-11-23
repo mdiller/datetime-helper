@@ -2,7 +2,7 @@
 	<DillermNavBar :config="config" />
 	<div id="container" class="dillerm" :class="{ 'code-expanded': code_expanded }">
 		<div>
-			There will be a clock here
+			<Clock v-model:value="datetime" />
 		</div>
 		<div>
 			<dillerm-text
@@ -49,6 +49,8 @@ import "prismjs/components/prism-javascript";
 import "prismjs/components/prism-python";
 import "prismjs/components/prism-csharp";
 import "./assets/prismjs-theme.css";
+
+import Clock from "./components/Clock.vue";
 
 import CODE_CS from "./assets/code.cs?raw";
 import CODE_JS from "./assets/code.js?raw";
@@ -116,7 +118,8 @@ export default {
 	components: {
 		DillermSelect,
 		DillermText,
-		DillermNavBar
+		DillermNavBar,
+		Clock
 	},
 	data() {
 		return {
@@ -256,6 +259,11 @@ export default {
 	flex: 1;
 	padding: 10px 20px;
 	transition: padding 1s;
+}
+
+#container > div:first-child {
+	display: flex;
+	justify-content: center;
 }
 
 .combo-table { 
